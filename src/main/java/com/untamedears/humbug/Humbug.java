@@ -80,6 +80,7 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.EntityEquipment;
@@ -1016,33 +1017,33 @@ public class Humbug extends JavaPlugin implements Listener {
   // Give introduction book to n00bs
 
   private Set<String> playersWithN00bBooks_ = new TreeSet<String>();
-
-  @EventHandler(priority=EventPriority.HIGHEST)
-  public void onPlayerDeathBookDrop(PlayerDeathEvent e) {
-    final String playerName = e.getEntity().getName();
-    List<ItemStack> dropList = e.getDrops();
-    for (int i = 0; i < dropList.size(); ++i) {
-      final ItemStack item = dropList.get(i);
-      if (item.getType().equals(Material.WRITTEN_BOOK)) {
-        final BookMeta bookMeta = (BookMeta)item.getItemMeta();
-        if (bookMeta.getTitle().equals(config_.getTitle())) {
-          playersWithN00bBooks_.add(playerName);
-          dropList.remove(i);
-          return;
+  
+    @EventHandler(priority=EventPriority.HIGHEST)
+    public void onPlayerDeathBookDrop(PlayerDeathEvent e) {
+      final String playerName = e.getEntity().getName();
+      List<ItemStack> dropList = e.getDrops();
+      for (int i = 0; i < dropList.size(); ++i) {
+        final ItemStack item = dropList.get(i);
+        if (item.getType().equals(Material.WRITTEN_BOOK)) {
+          final BookMeta bookMeta = (BookMeta)item.getItemMeta();
+          if (bookMeta.getTitle().equals(config_.getTitle())) {
+            playersWithN00bBooks_.add(playerName);
+            dropList.remove(i);
+            return;
+          }
         }
       }
+      playersWithN00bBooks_.remove(playerName);
     }
-    playersWithN00bBooks_.remove(playerName);
-  }
-
+   
   @EventHandler
   public void onGiveBookOnRespawn(PlayerRespawnEvent event) {
     final Player player = event.getPlayer();
     final String playerName = player.getName();
-    if (!playersWithN00bBooks_.contains(playerName)) {
+	  if (!playersWithN00bBooks_.contains(playerName)) {
       return;
     }
-    playersWithN00bBooks_.remove(playerName);
+	  playersWithN00bBooks_.remove(playerName);
     giveN00bBook(player);
   }
 
@@ -1050,12 +1051,12 @@ public class Humbug extends JavaPlugin implements Listener {
   public void onGiveBookOnJoin(PlayerJoinEvent event) {
     final Player player = event.getPlayer();
     final String playerName = player.getName();
-    if (player.hasPlayedBefore() && !playersWithN00bBooks_.contains(playerName)) {
-      return;
-    }
-    playersWithN00bBooks_.remove(playerName);
-    giveN00bBook(player);
-  }
+	if (player.hasPlayedBefore() && !playersWithN00bBooks_.contains(playerName)) {
+	         return;
+	       }
+		   playersWithN00bBooks_.remove(playerName);
+	       giveN00bBook(player);
+	     } 
 
   public void giveN00bBook(Player player) {
     Inventory inv = player.getInventory();
@@ -1434,20 +1435,34 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
-  // Adjust horse speeds
-
+  // Adjust horse and minecart speeds
+  @BahHumbugs ({
+  @BahHumbug(opt="minecart_speed", type=OptType.Double, def="1"),
   @BahHumbug(opt="horse_speed", type=OptType.Double, def="0.170000")
+  })
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   public void onVehicleEnter(VehicleEnterEvent event) {
     // 0.17 is just a tad slower than minecarts
     Vehicle vehicle = event.getVehicle();
-    if (!(vehicle instanceof Horse)) {
-      return;
+    if (vehicle instanceof Horse) {
+        Versioned.setHorseSpeed((Entity)vehicle, config_.get("horse_speed").getDouble());
     }
-    Versioned.setHorseSpeed((Entity)vehicle, config_.get("horse_speed").getDouble());
+    if (vehicle instanceof Minecart){
+    	// cannot be greater than 2.  minecarts will fly off of track.
+    	((Minecart) vehicle).setMaxSpeed(config_.get("minecart_speed").getDouble());
+    	
+    }  
   }
-
   // ================================================
+  // Storage minecarts dont slow down.
+  @BahHumbug(opt="storage_carts_slowable", type=OptType.Bool, def="false")
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  public void onStorageCartMoveEvent(VehicleMoveEvent event){
+	  Vehicle veh = event.getVehicle();
+	  if (!(veh instanceof StorageMinecart)) return;
+	  ((StorageMinecart)veh).setSlowWhenEmpty(config_.get("storage_carts_slowable").getBool());
+  }
+  // ============================
   // Admins can view player inventories
 
   @SuppressWarnings("deprecation")
@@ -1648,6 +1663,7 @@ public class Humbug extends JavaPlugin implements Listener {
     hookEnderPearls();
     global_instance_ = this;
     info("Enabled");
+    
   }
 
   public boolean isInitiaized() {
