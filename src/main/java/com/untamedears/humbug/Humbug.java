@@ -96,6 +96,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import com.trc202.CombatTag.CombatTag;
+import com.trc202.CombatTagApi.CombatTagApi;
 import com.untamedears.humbug.CombatTagManager;
 import com.untamedears.humbug.Versioned;
 import com.untamedears.humbug.annotations.BahHumbug;
@@ -143,7 +145,8 @@ public class Humbug extends JavaPlugin implements Listener {
 
   private Random prng_ = new Random();
   private CombatTagManager combatTag_ = new CombatTagManager();
-
+  private CombatTag combat= new CombatTag();
+  private CombatTagApi combatapi= new CombatTagApi(combat);
   public Humbug() {}
 
   // ================================================
@@ -1270,7 +1273,6 @@ public class Humbug extends JavaPlugin implements Listener {
 
   private class PearlTeleportInfo {
     public long last_teleport;
-    public boolean notified_player;
   }
 
   private Map<String, PearlTeleportInfo> pearl_teleport_info_
@@ -1281,7 +1283,7 @@ public class Humbug extends JavaPlugin implements Listener {
     if (!config_.get("ender_pearl_teleportation_throttled").getBool()) {
       return;
     }
-    if (event.getItem() == null || !event.getItem().getType().equals(Material.ENDER_PEARL)) {
+    if (event.getItem() == null || !event.getItem().getType().equals(Material.ENDER_PEARL) || event.getClickedBlock() == null) {
       return;
     }
     Action action = event.getAction();
@@ -1296,21 +1298,17 @@ public class Humbug extends JavaPlugin implements Listener {
     if (teleport_info == null) {
       teleport_info = new PearlTeleportInfo();
       teleport_info.last_teleport = current_time;
-      teleport_info.notified_player = false;
     } else {
       final long time_diff = current_time - teleport_info.last_teleport;
       final long block_window = 10000;
       if (block_window > time_diff) {
         event.setCancelled(true);
-        if (!teleport_info.notified_player) {
           event.getPlayer().sendMessage(String.format(
               "Pearl Teleport Cooldown: %ds",
               (block_window - time_diff + 500) / 1000));
-          teleport_info.notified_player = true;
-        }
+          event.getPlayer().sendMessage("You have been tagged for "+combatapi.getRemainingTagTime(player));
       } else {
         teleport_info.last_teleport = current_time;
-        teleport_info.notified_player = false;
       }
     }
     pearl_teleport_info_.put(player_name, teleport_info);
