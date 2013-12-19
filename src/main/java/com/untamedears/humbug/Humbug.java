@@ -1283,7 +1283,7 @@ public class Humbug extends JavaPlugin implements Listener {
     if (!config_.get("ender_pearl_teleportation_throttled").getBool()) {
       return;
     }
-    if (event.getItem() == null || !event.getItem().getType().equals(Material.ENDER_PEARL) || event.getClickedBlock() == null) {
+    if (event.getItem() == null || !event.getItem().getType().equals(Material.ENDER_PEARL) || event.getClickedBlock() != null) {
       return;
     }
     Action action = event.getAction();
