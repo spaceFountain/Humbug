@@ -1273,6 +1273,8 @@ public class Humbug extends JavaPlugin implements Listener {
 
   private class PearlTeleportInfo {
     public long last_teleport;
+    public boolean notified_player;
+    public long last_notification;
   }
 
   private Map<String, PearlTeleportInfo> pearl_teleport_info_
@@ -1298,17 +1300,30 @@ public class Humbug extends JavaPlugin implements Listener {
     if (teleport_info == null) {
       teleport_info = new PearlTeleportInfo();
       teleport_info.last_teleport = current_time;
+      teleport_info.notified_player = false;
+      teleport_info.last_notification = System.currentTimeMillis();
     } else {
       final long time_diff = current_time - teleport_info.last_teleport;
       final long block_window = 10000;
+      final long last_notification_current = System.currentTimeMillis() - teleport_info.last_notification;
       if (block_window > time_diff) {
         event.setCancelled(true);
+        if (teleport_info.notified_player && 1000 > last_notification_current)
+        	 event.getPlayer().sendMessage(String.format(
+                     "Pearl Teleport Cooldown: %ds",
+                     (block_window - time_diff + 500) / 1000));
+        if (!teleport_info.notified_player){
           event.getPlayer().sendMessage(String.format(
               "Pearl Teleport Cooldown: %ds",
               (block_window - time_diff + 500) / 1000));
           event.getPlayer().sendMessage("You have been tagged for "+combatapi.getRemainingTagTime(player));
+          teleport_info.notified_player = true;
+        }
+        
       } else {
         teleport_info.last_teleport = current_time;
+        teleport_info.notified_player = false;
+        teleport_info.last_notification = System.currentTimeMillis();
       }
     }
     pearl_teleport_info_.put(player_name, teleport_info);
