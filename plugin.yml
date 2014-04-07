@@ -1,6 +1,6 @@
 name: Humbug
 main: com.untamedears.humbug.Humbug
-version: 1.4.22
+version: 1.5.7
 softdepend: [CombatTag]
 description: toggles various functionality
 author: erocs
@@ -14,6 +14,10 @@ commands:
     description: Creates the intro book for new players
     usage: /introbook [<playerName>]
     permission: humbug.admin.introbook
+  bahhumbug:
+    description: Creates a holiday package
+    usage: /bahhumbug
+    permission: humbug.admin.bahhumbug
   invsee:
     description: Allows admins to look into Player Inventories.
     usage: /invsee <player>
@@ -27,9 +31,13 @@ permissions:
     default: op
     children:
       humbug.admin.introbook: true
+      humbug.admin.bahhumbug: true
       humbug.admin.invsee: true
   humbug.admin.introbook:
     description: Access to the /introbook command
+    default: false
+  humbug.admin.bahhumbug:
+    description: Access to the /bahhumbug command
     default: false
   humbug.admin.invsee:
     description: Access to the /invsee command
