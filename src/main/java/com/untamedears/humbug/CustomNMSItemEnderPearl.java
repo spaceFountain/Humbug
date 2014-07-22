@@ -1,11 +1,10 @@
 package com.untamedears.humbug;
 
-import java.util.logging.Logger;
 
-import net.minecraft.server.v1_6_R3.EntityHuman;
-import net.minecraft.server.v1_6_R3.ItemEnderPearl;
-import net.minecraft.server.v1_6_R3.ItemStack;
-import net.minecraft.server.v1_6_R3.World;
+import net.minecraft.server.v1_7_R4.EntityHuman;
+import net.minecraft.server.v1_7_R4.ItemEnderPearl;
+import net.minecraft.server.v1_7_R4.ItemStack;
+import net.minecraft.server.v1_7_R4.World;
 
 import com.untamedears.humbug.Config;
 import com.untamedears.humbug.CustomNMSEntityEnderPearl;
@@ -13,8 +12,8 @@ import com.untamedears.humbug.CustomNMSEntityEnderPearl;
 public class CustomNMSItemEnderPearl extends ItemEnderPearl {
   private Config cfg_;
 
-  public CustomNMSItemEnderPearl(int i, Config cfg) {
-    super(i);
+  public CustomNMSItemEnderPearl(Config cfg) {
+    super();
     cfg_ = cfg;
   }
 
@@ -32,7 +31,7 @@ public class CustomNMSItemEnderPearl extends ItemEnderPearl {
           entityhuman,
           "random.bow",
           0.5F,
-          0.4F / (f.nextFloat() * 0.4F + 0.8F));
+          0.4F / (g.nextFloat() * 0.4F + 0.8F));
       if (!world.isStatic) {
         double gravity = cfg_.get("ender_pearl_gravity").getDouble();
         world.addEntity(new CustomNMSEntityEnderPearl(world, entityhuman, gravity));

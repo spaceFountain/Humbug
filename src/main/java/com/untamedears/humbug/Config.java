@@ -77,6 +77,17 @@ public class Config {
   private static final Iterable<String> compiled_book_text_ =
       Splitter.on("}|").split(book_text_.replaceAll("\\{\\|", "\u00A7"));
 
+  private static final String holiday_book_name_ = "Happy Holidays";
+  private static final String holiday_book_author_ = "the CivCraft Admins";
+  private static final String holiday_book_text_ =
+      "    {|2H{|4a{|2p{|4p{|2y {|4H{|2o{|4l{|2i{|4d{|2a{|4y{|2s{|4!{|0\n"
+      + "Thank each and every one of you for making the server what it is. "
+      + "Our best wishes go out to you and yours. May your New Year "
+      + "be full of griefing, drama, and mayhem.\n\n"
+      + "-Santa Ttk2 and the Admin Elves";
+  private static final Iterable<String> compiled_holiday_book_text_ =
+      Splitter.on("}|").split(holiday_book_text_.replaceAll("\\{\\|", "\u00A7"));
+
 
   private static FileConfiguration config_ = null;
 
@@ -179,6 +190,22 @@ public class Config {
   public List<String> getPages(){
     List<String> book_pages = new LinkedList<String>();
     for(final String text: compiled_book_text_){
+      book_pages.add(text);
+    }
+    return book_pages;
+  }
+
+  public String getHolidayTitle(){
+    return holiday_book_name_;
+  }
+
+  public String getHolidayAuthor(){
+    return holiday_book_author_;
+  }
+
+  public List<String> getHolidayPages(){
+    List<String> book_pages = new LinkedList<String>();
+    for(final String text: compiled_holiday_book_text_){
       book_pages.add(text);
     }
     return book_pages;
@@ -312,5 +339,9 @@ public class Config {
       sb.append(",");
     }
     return sb.toString();
+  }
+  
+  public void tag_on_join(boolean value){
+	  config_.set("tag_on_join", value);
   }
 }

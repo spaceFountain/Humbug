@@ -14,8 +14,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import net.minecraft.server.v1_7_R1.EntityTypes;
-import net.minecraft.server.v1_7_R1.Item;
+import net.minecraft.server.v1_7_R4.EntityTypes;
+import net.minecraft.server.v1_7_R4.Item;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -28,6 +28,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Hopper;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -71,6 +72,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
@@ -89,6 +91,7 @@ import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.PortalCreateEvent;
+import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -1107,19 +1110,27 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
-//=================================================
-// Combat Tag players on server join
-@BahHumbug(opt="tag_on_join", def="true")
-@EventHandler
+  //=================================================
+  // Combat Tag players on server join
+
+  @BahHumbug(opt="tag_on_join", def="true")
+  @EventHandler
   public void tagOnJoin(PlayerJoinEvent event){
-	  if(!config_.get("tag_on_join").getBool()) {
-		  return;
-	  }
-	  Player loginPlayer = event.getPlayer();
-	      combatTag_.tagPlayer(loginPlayer.getName());
-	   	  String alert = "You have been Combat Tagged on Login";
-	   	  loginPlayer.sendMessage(alert);
-	  }
+    if(!config_.get("tag_on_join").getBool()) {
+      return;
+    }
+    // Delay two ticks to tag after secure login has been denied.
+    // This opens a 1 tick window for a cheater to login and grab
+    // server info, which should be detectable and bannable.
+    final Player loginPlayer = event.getPlayer();
+    Bukkit.getScheduler().runTaskLater(this, new Runnable() {
+      @Override
+      public void run() {
+        combatTag_.tagPlayer(loginPlayer.getName());
+        loginPlayer.sendMessage("You have been Combat Tagged on Login");
+      }
+    }, 2L);
+  }
 
   //================================================
   // Give introduction book to n00bs
@@ -1596,6 +1607,23 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
+  // Disable outbound hopper transfers
+
+  @BahHumbug(opt="disable_hopper_out_transfers", def="false")
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  public void onInventoryMoveItem(InventoryMoveItemEvent event) {
+    if (!config_.get("disable_hopper_out_transfers").getBool()) {
+      return;
+    }
+    final Inventory src = event.getSource();
+    final InventoryHolder srcHolder = src.getHolder();
+    if (srcHolder instanceof Hopper) {
+      event.setCancelled(true);
+      return;
+    }
+  }
+
+  // ================================================
   // Adjust horse speeds
 
   @BahHumbug(opt="horse_speed", type=OptType.Double, def="0.170000")
@@ -1621,7 +1649,7 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     final Inventory pl_inv = player.getInventory();
     final Inventory inv = Bukkit.createInventory(
-        admin, 36, "Player inventory: " + playerName);
+        admin, 36, playerName + "'s Inventory");
     for (int slot = 0; slot < 36; slot++) {
       final ItemStack it = pl_inv.getItem(slot);
       inv.setItem(slot, it);
@@ -1787,7 +1815,8 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     Player player = event.getPlayer();
     Entity vehicle = player.getVehicle();
-    if (vehicle == null || !(vehicle instanceof Minecart)) {
+    if (vehicle == null
+        || !(vehicle instanceof Minecart || vehicle instanceof Horse)) {
       return;
     }
     Location vehicleLoc = vehicle.getLocation();
@@ -1860,32 +1889,6 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
-  //Remove Book Copying
-  @BahHumbug(opt="copy_book_enable", def= "false")
-  public void removeBooks() {
-    if (config_.get("copy_book_enable").getBool()) {
-      return;
-    }
-    Iterator<Recipe> it = getServer().recipeIterator();
-    while (it.hasNext()) {
-      Recipe recipe = it.next();
-      ItemStack resulting_item = recipe.getResult();
-      if ( // !copy_book_enable_ &&
-          isWrittenBook(resulting_item)) {
-        it.remove();
-        info("Copying Books disabled");
-      }
-    }
-  }
-  
-  public boolean isWrittenBook(ItemStack item) {
-if (item == null) {
-return false;
-}
-Material material = item.getType();
-return material.equals(Material.WRITTEN_BOOK);
-}
-  // ================================================
   // Adjust ender pearl gravity
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -1930,88 +1933,148 @@ return material.equals(Material.WRITTEN_BOOK);
 
   // ================================================
   // Hunger Changes
-  private Map<Player, Double> eat = new HashMap<Player, Double>(); // keep track if the player just ate
+
+  // Keep track if the player just ate.
+  private Map<Player, Double> playerLastEat_ = new HashMap<Player, Double>();
+
   @BahHumbug(opt="saturation_multiplier", type=OptType.Double, def="0.0")
   @EventHandler
-  public void setSaturationOnFoodEat(PlayerItemConsumeEvent event){ // Each food sets a different saturation.
-	  final Player player = event.getPlayer();
-	  ItemStack item = event.getItem();
-	  Material mat = item.getType();
-	  double multiplier = config_.get("saturation_multiplier").getDouble();
-	  if (multiplier == 0) return;
-	  switch(mat){
-	  case APPLE:
-		  eat.put(player, multiplier*2.4);
-	  case BAKED_POTATO:
-		  eat.put(player, multiplier*7.2);
-	  case BREAD:
-		  eat.put(player, multiplier*6);
-	  case CAKE:
-		  eat.put(player, multiplier*.4);
-	  case CARROT_ITEM:
-		  eat.put(player, multiplier*4.8);
-	  case COOKED_FISH:
-		  eat.put(player, multiplier*6);
-	  case GRILLED_PORK:
-		  eat.put(player, multiplier*12.8);
-	  case COOKIE:
-		  eat.put(player, multiplier*0.4);
-	  case GOLDEN_APPLE:
-		  eat.put(player, multiplier*9.6);
-	  case GOLDEN_CARROT:
-		  eat.put(player, multiplier*14.4);
-	  case MELON:
-		  eat.put(player, multiplier*1.2);
-	  case MUSHROOM_SOUP:
-		  eat.put(player, multiplier*7.2);
-	  case POISONOUS_POTATO:
-		  eat.put(player, multiplier*1.2);
-	  case POTATO:
-		  eat.put(player, multiplier*.6);
-	  case RAW_FISH:
-		  eat.put(player, multiplier*1);
-	  case PUMPKIN_PIE:
-		  eat.put(player, multiplier*4.8);
-	  case RAW_BEEF:
-		  eat.put(player,  multiplier*1.8);
-	  case RAW_CHICKEN:
-		  eat.put(player, multiplier*1.2);
-	  case PORK:
-		  eat.put(player,  multiplier*1.8);
-	  case ROTTEN_FLESH:
-		  eat.put(player, multiplier*.8);
-	  case SPIDER_EYE:
-		  eat.put(player, multiplier*3.2);
-	  case COOKED_BEEF:
-		  eat.put(player, multiplier*12.8);
-	  default:
-		  eat.put(player, multiplier);
-		  Bukkit.getServer().getScheduler().runTaskLater(this, new Runnable(){ // in case the player ingested a potion, this removes the
-			  // saturation from the list.  Unsure if I have every item listed.  There is always the other cases of like food 
-			  // that sahes same id
-			  @Override
-			  public void run(){
-				  if (eat.containsKey(player)) eat.remove(player);
-			  }
-		  }, 80);
-	  }
-	  
+  public void setSaturationOnFoodEat(PlayerItemConsumeEvent event) {
+    // Each food sets a different saturation.
+    final Player player = event.getPlayer();
+    ItemStack item = event.getItem();
+    Material mat = item.getType();
+    double multiplier = config_.get("saturation_multiplier").getDouble();
+    if (multiplier <= 0.000001 && multiplier >= -0.000001) {
+      return;
+    }
+    switch(mat) {
+      case APPLE:
+        playerLastEat_.put(player, multiplier*2.4);
+      case BAKED_POTATO:
+        playerLastEat_.put(player, multiplier*7.2);
+      case BREAD:
+        playerLastEat_.put(player, multiplier*6);
+      case CAKE:
+        playerLastEat_.put(player, multiplier*0.4);
+      case CARROT_ITEM:
+        playerLastEat_.put(player, multiplier*4.8);
+      case COOKED_FISH:
+        playerLastEat_.put(player, multiplier*6);
+      case GRILLED_PORK:
+        playerLastEat_.put(player, multiplier*12.8);
+      case COOKIE:
+        playerLastEat_.put(player, multiplier*0.4);
+      case GOLDEN_APPLE:
+        playerLastEat_.put(player, multiplier*9.6);
+      case GOLDEN_CARROT:
+        playerLastEat_.put(player, multiplier*14.4);
+      case MELON:
+        playerLastEat_.put(player, multiplier*1.2);
+      case MUSHROOM_SOUP:
+        playerLastEat_.put(player, multiplier*7.2);
+      case POISONOUS_POTATO:
+        playerLastEat_.put(player, multiplier*1.2);
+      case POTATO:
+        playerLastEat_.put(player, multiplier*0.6);
+      case RAW_FISH:
+        playerLastEat_.put(player, multiplier*1);
+      case PUMPKIN_PIE:
+        playerLastEat_.put(player, multiplier*4.8);
+      case RAW_BEEF:
+        playerLastEat_.put(player,  multiplier*1.8);
+      case RAW_CHICKEN:
+        playerLastEat_.put(player, multiplier*1.2);
+      case PORK:
+        playerLastEat_.put(player,  multiplier*1.8);
+      case ROTTEN_FLESH:
+        playerLastEat_.put(player, multiplier*0.8);
+      case SPIDER_EYE:
+        playerLastEat_.put(player, multiplier*3.2);
+      case COOKED_BEEF:
+        playerLastEat_.put(player, multiplier*12.8);
+      default:
+        playerLastEat_.put(player, multiplier);
+        Bukkit.getServer().getScheduler().runTaskLater(this, new Runnable() {
+          // In case the player ingested a potion, this removes the
+          // saturation from the list. Unsure if I have every item
+          // listed. There is always the other cases of like food
+          // that shares same id
+          @Override
+          public void run() {
+            playerLastEat_.remove(player);
+          }
+        }, 80);
+    }
   }
+
   @BahHumbug(opt="hunger_slowdown", type=OptType.Double, def="0.0")
   @EventHandler
   public void onFoodLevelChange(FoodLevelChangeEvent event) {
-      final Player player = (Player) event.getEntity();
-      final double mod = config_.get("hunger_slowdown").getDouble();
-      final double saturation;
-      if (eat.containsKey(player)){ // if the player just ate
-    	  saturation = eat.get(player);
+    final Player player = (Player) event.getEntity();
+    final double mod = config_.get("hunger_slowdown").getDouble();
+    Double saturation;
+    if (playerLastEat_.containsKey(player)) { // if the player just ate
+      saturation = playerLastEat_.get(player);
+      if (saturation == null) {
+        saturation = ((Float)player.getSaturation()).doubleValue();
       }
-      else{
+    } else {
       saturation = Math.min(
           player.getSaturation() + mod,
           20.0D + (mod * 2.0D));
+    }
+    player.setSaturation(saturation.floatValue());
+  }
+
+  //=================================================
+  //Remove Book Copying
+  @BahHumbug(opt="copy_book_enable", def= "false")
+  public void removeBooks() {
+    if (config_.get("copy_book_enable").getBool()) {
+      return;
+    }
+    Iterator<Recipe> it = getServer().recipeIterator();
+    while (it.hasNext()) {
+      Recipe recipe = it.next();
+      ItemStack resulting_item = recipe.getResult();
+      if ( // !copy_book_enable_ &&
+          isWrittenBook(resulting_item)) {
+        it.remove();
+        info("Copying Books disabled");
       }
-      player.setSaturation((float)saturation);
+    }
+  }
+  
+  public boolean isWrittenBook(ItemStack item) {
+    if (item == null) {
+      return false;
+    }
+    Material material = item.getType();
+    return material.equals(Material.WRITTEN_BOOK);
+  }
+
+  // ================================================
+  // Prevent tree growth wrap-around
+
+  @BahHumbug(opt="prevent_tree_wraparound", def="true")
+  @EventHandler(priority=EventPriority.LOWEST, ignoreCancelled = true)
+  public void onStructureGrowEvent(StructureGrowEvent event) {
+    if (!config_.get("prevent_tree_wraparound").getBool()) {
+      return;
+    }
+    int maxY = 0, minY = 257;
+    for (BlockState bs : event.getBlocks()) {
+      final int y = bs.getLocation().getBlockY();
+      maxY = Math.max(maxY, y);
+      minY = Math.min(minY, y);
+    }
+    if (maxY - minY > 240) {
+      event.setCancelled(true);
+      final Location loc = event.getLocation();
+      info(String.format("Prevented structure wrap-around at %d, %d, %d",
+          loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
+    }
   }
 
   // ================================================
@@ -2028,6 +2091,7 @@ return material.equals(Material.WRITTEN_BOOK);
     registerEvents();
     registerCommands();
     removeRecipies();
+    removeBooks();
     global_instance_ = this;
     info("Enabled");
   }

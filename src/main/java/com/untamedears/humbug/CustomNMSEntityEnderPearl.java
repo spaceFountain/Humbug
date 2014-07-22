@@ -1,12 +1,21 @@
 package com.untamedears.humbug;
 
-import java.util.logging.Logger;
-
-import net.minecraft.server.v1_6_R3.EntityEnderPearl;
-import net.minecraft.server.v1_6_R3.EntityLiving;
-import net.minecraft.server.v1_6_R3.World;
+import net.minecraft.server.v1_7_R4.EntityEnderPearl;
+import net.minecraft.server.v1_7_R4.EntityLiving;
+import net.minecraft.server.v1_7_R4.NBTTagCompound;
+import net.minecraft.server.v1_7_R4.World;
+import org.bukkit.Bukkit;
 
 public class CustomNMSEntityEnderPearl extends EntityEnderPearl {
+  private long tick_ = 0L;
+  private double startDeltaX_ = 0.0D;
+  private double startDeltaY_ = 0.0D;
+  private double startDeltaZ_ = 0.0D;
+
+  private double startX_ = 0.0D;
+  private double startY_ = 0.0D;
+  private double startZ_ = 0.0D;
+  public double y_adjust_;
 
   public CustomNMSEntityEnderPearl(World world) {
     super(world);
@@ -18,9 +27,84 @@ public class CustomNMSEntityEnderPearl extends EntityEnderPearl {
     y_adjust_ = gravity;
   }
 
-  public final double y_adjust_;  // Default 0.03F
-
-  protected float e() {
+  protected float i() {
     return (float)y_adjust_;
+  }
+
+  public void h() {
+    super.h();
+    if (tick_==0) {
+      startDeltaX_ = motX;
+      startDeltaY_ = motY;
+      startDeltaZ_ = motZ;
+
+      startX_ = locX;
+      startY_ = locY;
+      startZ_ = locZ;
+      return;
+    }
+
+
+    double x = startDeltaX_ * tick_ + startX_;
+    double y = e() / -2.0F * (float)tick_ * (float)tick_ + startDeltaY_ * tick_ + startY_;
+    double z = startDeltaZ_ * tick_ + startZ_;
+
+    motX = startDeltaX_;
+    motY = (-e() * (float)tick_ + startDeltaY_);
+    motZ = startDeltaZ_;
+
+    super.setPosition(x, y, z);
+    tick_ += 1L;
+  }
+
+  public long getTick() {
+    return tick_;
+  }
+
+  public void b(NBTTagCompound nbttagcompound) {
+    EnderPearlUnloadEvent event = new EnderPearlUnloadEvent(getBukkitEntity());
+    Bukkit.getServer().getPluginManager().callEvent(event);
+    if (event.isCancelled()) {
+      getBukkitEntity().remove();
+      return;
+    }
+
+    super.b(nbttagcompound);
+
+    nbttagcompound.setDouble("HumbugGravity", y_adjust_);
+    nbttagcompound.setLong("HumbugTick", tick_);
+
+    nbttagcompound.setDouble("HumbugStartX", startX_);
+    nbttagcompound.setDouble("HumbugStartY", startY_);
+    nbttagcompound.setDouble("HumbugStartZ", startZ_);
+
+    nbttagcompound.setDouble("HumbugStartDeltaX", startDeltaX_);
+    nbttagcompound.setDouble("HumbugStartDeltaY", startDeltaY_);
+    nbttagcompound.setDouble("HumbugStartDeltaZ", startDeltaZ_);
+  }
+  public void a(NBTTagCompound nbttagcompound) {
+    EnderPearlLoadEvent event = new EnderPearlLoadEvent(getBukkitEntity());
+    Bukkit.getServer().getPluginManager().callEvent(event);
+    if (event.isCancelled()) {
+      getBukkitEntity().remove();
+      return;
+    }
+    super.a(nbttagcompound);
+
+    if (!nbttagcompound.hasKey("HumbugTick")) {
+      tick_ = 0L;
+      return;
+    }
+
+    y_adjust_ = nbttagcompound.getDouble("HumbugGravity");
+    tick_ = nbttagcompound.getLong("HumbugTick");
+
+    startX_ = nbttagcompound.getDouble("HumbugStartX");
+    startY_ = nbttagcompound.getDouble("HumbugStartY");
+    startZ_ = nbttagcompound.getDouble("HumbugStartZ");
+
+    startDeltaX_ = nbttagcompound.getDouble("HumbugStartDeltaX");
+    startDeltaY_ = nbttagcompound.getDouble("HumbugStartDeltaY");
+    startDeltaZ_ = nbttagcompound.getDouble("HumbugStartDeltaZ");
   }
 }
