@@ -1,7 +1,7 @@
 Humbug
 ======
 
-Minecraft server plug-in: Simply disables various functionality
+Minecraft server plug-in: Simply toggles various functionality
 
 - Disables Anvil use.
 - Disables Ender Chest use.
@@ -10,10 +10,12 @@ Minecraft server plug-in: Simply disables various functionality
 - Disables Ender dragon.
 - Disables join/quit/kick announcements.
 - Enables personal death message with coords
-- Disabled Death announcements.
+- Disables Death announcements.
 - Enables Red coloring on Death announcements.
 - Enables death message logging.
-- Disabled Enderman Griefing (stealing blocks)
+- Disables Enderman Griefing (stealing blocks)
+- Enables Unlimited Cauldron Water
+- Enables Quartz from Gravel
 - Disables Wither block destruction radius.
 - Disables Wither and Wither Skull explosions.
 - Disables cobblestone generation from lava and water.
@@ -25,6 +27,24 @@ Minecraft server plug-in: Simply disables various functionality
 - Removes the Enchanted Golden Apple recipe.
 - Converts Enchanted Golden Apples to normal Golden Apples if a Player attempts to eat them.
 - Disables Ender Pearl Teleportation
+- Throttles Ender Pearl Teleportation
+- Alters the downward acceleration of Ender Pearls
+- Alters the drop rate of wither skulls
+- Removes specific items from dropping when a mob is killed
+- Prevents records from playing in jukeboxes
+- Disabled dying sheep
+- Disables water usage in main world hell biomes
+- Prevents end portal tiles from being destroyed
+- Prevents inventories, not your own, from being opened while in vehicles
+- Prevents container carts from being opened
+- Give projectiles a slow debuff on hit
+- Multiplies mob death loot item count
+- Disables experience except from XP bottles
+- Finds End Portals in a world.
+- Swaps Wither Skeletons or Ghasts in for Zombie Pigmen to raise their spawn rate.
+- Adjust strength and health pots to pre-1.6 power levels
+- Sets the base movement speed for all mounted horses
+- Fixes a bug where players in destroyed minecarts fall through the block below
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -42,6 +62,8 @@ Config file settings:
 - deathred: Boolean, makes death announce messages red
 - deathlog: Boolean, logs player deaths to the console
 - endergrief: Boolean, turns on enderman stealing blocks
+- unlimitedcauldron: Boolean, turns on unlimited cauldron water
+- quartz_gravel_percentage: Integer between 0 and 100, 0 is standard behavior.
 - wither: Boolean, Turns on the wither
 - wither_explosions: Boolean, Turns on wither explosions destroying blocks. Wither/Wither Skull explosions will always occur to damage players, this only effects block breakage.
 - wither_insta_break: Boolean, Turns on the wither insta-break ability
@@ -53,8 +75,30 @@ Config file settings:
 - fix_vehicle_logout_bug: Boolean, Fixes a teleport bug when players logout in vehicles
 - player_max_health: Integer, sets all Player maximum health
 - ender_pearl_teleportation: Boolean, Turns on Ender Pearl teleportation
+- ender_pearl_teleportation_throttled: Boolean, Activates a cooldown between Ender Pearl teleports
+- ender_pearl_gravity: Double, Alters the gravity which effects Ender Pearl -Y acceleration, default Minecraft value is 0.03
 - ench_gold_app_edible: Boolean, Allows players to eat Enchanted Golden Apples. If false, Enchanted Golden Apples are converted to normal Golden Apples
 - ench_gold_app_craftable: Boolean, Allows the Enchanted Golden Apple recipe to be used
+- wither_skull_drop_rate: Integer between -1 and 1000000, -1 is standard behavior. If a random number [0, 1000000) is less then this value, a wither skull drops. For example, 200000 is a 20% drop rate.
+- extra_wither_skele_spawn_rate: Integer between -1 and 1000000, -1 is standard behavior. If a random number [0, 1000000) is less then this value, a wither skeleton is spawned in the place of a zombie pigman. For example, 200000 is a 20% spawn rate.
+- extra_ghast_spawn_rate: Integer between -1 and 1000000, -1 is standard behavior. If a random number [0, 1000000) is less then this value, a Ghast is spawned in the place of a zombie pigman. For example, 200000 is a 20% spawn rate.
+- remove_mob_drops: List<Integer>, a list of item IDs to remove from the dropped items when mobs are killed. The in-game command can also accept Material names.
+- disallow_record_playing: Boolean, Disables the ability for records to play in jukeboxes
+- allow_dye_sheep: Boolean, defaults to true. Allows sheep to be dyed directly (rather than dyeing each bit of wool).
+- allow_water_in_nether: Boolean, enables water use in hell biomes
+- indestructible_end_portals: Boolean, makes end portal tiles indestructible
+- prevent_vehicle_inventory_open: Boolean, prevent players in vehicles from opening inventories
+- prevent_opening_container_carts: Boolean, prevent inventory minecarts from being opened
+- projectile_slow_chance: Integer between 1 and 100 or out of bounds to disable, percentage chance of a projectile shot causing a slow debuff
+- projectile_slow_ticks: Integer, number of server ticks a projectile shot's slow debuff will last
+- loot_drop: Integer, multiplier to apply to mob death item counts
+- disable_experience: Boolean, disables all vanilla experience but XP bottles
+- xp_per_bottle: Integer, sets the amount of XP given to a player by an XP bottle
+- find_end_portals: String, name of the world in which to search for end portals
+- nerf_strength: Boolean, Nerfs the strength potion back to pre-1.5 mechanics
+- buff_health_pots: Boolean, Buffs the health potion back to pre-1.5 mechanics
+- horse_speed: Double, Sets the base movement speed of all mounted horses. This is MineCraft's adjustment ratio. The default 0.17 is just slower than a minecart.
+- fix_minecart_reenter_bug: Boolean, Fixes the minecart re-enter bug where players in a destroyed minecart could fall through the world
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -70,6 +114,8 @@ Default configuration (biased for CivCraft):
 - deathred: false
 - deathlog: false
 - endergrief: true
+- unlimitedcauldron: false
+- quartz_gravel_percentage: 0
 - wither: true
 - wither_explosions: false
 - wither_insta_break: false
@@ -81,5 +127,27 @@ Default configuration (biased for CivCraft):
 - fix_vehicle_logout_bug: true
 - player_max_health: 20
 - ender_pearl_teleportation: true
+- ender_pearl_teleportation_throttled: true
+- ender_pearl_gravity: 0.06
 - ench_gold_app_edible: false
 - ench_gold_app_craftable: false
+- wither_skull_drop_rate: -1
+- extra_wither_skele_spawn_rate: -1
+- extra_ghast_spawn_rate: -1
+- remove_mob_drops:
+- disallow_record_playing: true
+- allow_dye_sheep: true
+- allow_water_in_nether: false
+- indestructible_end_portals: true
+- prevent_vehicle_inventory_open: true
+- prevent_opening_container_carts: true
+- projectile_slow_chance: 30
+- projectile_slow_ticks: 100
+- loot_drop: 1
+- disable_experience: true
+- xp_per_bottle: 10
+- find_end_portals:
+- nerf_strength: true
+- buff_health_pots: true
+- horse_speed: 0.17
+- fix_minecart_reenter_bug: true

@@ -1,7 +1,8 @@
 name: Humbug
 main: com.untamedears.humbug.Humbug
-version: 1.1.7
-description: Disables new functionality until it can be properly delt with
+version: 1.5.12
+softdepend: [CombatTag]
+description: toggles various functionality
 author: erocs
 database: false
 commands:
@@ -9,7 +10,35 @@ commands:
     description: Gets and sets Humbugs settings
     usage: /humbug <setting> [<value>]
     permission: humbug.console
+  introbook:
+    description: Creates the intro book for new players
+    usage: /introbook [<playerName>]
+    permission: humbug.admin.introbook
+  bahhumbug:
+    description: Creates a holiday package
+    usage: /bahhumbug
+    permission: humbug.admin.bahhumbug
+  invsee:
+    description: Allows admins to look into Player Inventories.
+    usage: /invsee <player>
+    permission: humbug.admin.invsee
 permissions:
   humbug.console:
     description: Console commands for Humbug
+    default: false
+  humbug.admin:
+    description: Admin commands for Humbug
+    default: op
+    children:
+      humbug.admin.introbook: true
+      humbug.admin.bahhumbug: true
+      humbug.admin.invsee: true
+  humbug.admin.introbook:
+    description: Access to the /introbook command
+    default: false
+  humbug.admin.bahhumbug:
+    description: Access to the /bahhumbug command
+    default: false
+  humbug.admin.invsee:
+    description: Access to the /invsee command
     default: false
