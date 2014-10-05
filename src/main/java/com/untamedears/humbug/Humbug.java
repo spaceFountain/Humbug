@@ -1813,7 +1813,10 @@ public class Humbug extends JavaPlugin implements Listener {
     if (!config_.get("fix_vehicle_logout_bug").getBool()) {
       return;
     }
-    Player player = event.getPlayer();
+    kickPlayerFromVehicle(event.getPlayer());
+  }
+
+  public void kickPlayerFromVehicle(Player player) {
     Entity vehicle = player.getVehicle();
     if (vehicle == null
         || !(vehicle instanceof Minecart || vehicle instanceof Horse)) {
@@ -2094,6 +2097,16 @@ public class Humbug extends JavaPlugin implements Listener {
     removeBooks();
     global_instance_ = this;
     info("Enabled");
+  }
+  
+  public void onDisable() {
+    if (config_.get("fix_vehicle_logout_bug").getBool()) {
+      for (World world: getServer().getWorlds()) {
+        for (Player player: world.getPlayers()) {
+          kickPlayerFromVehicle(player);
+        }
+      }
+    }
   }
 
   public boolean isInitiaized() {
