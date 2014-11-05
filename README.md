@@ -45,6 +45,9 @@ Minecraft server plug-in: Simply toggles various functionality
 - Adjust strength and health pots to pre-1.6 power levels
 - Sets the base movement speed for all mounted horses
 - Fixes a bug where players in destroyed minecarts fall through the block below
+- Gives player saturation when they lose a point of hunger
+- Prevents a bug that allows tree growth to wrap around the world and overwrite blocks at 1+.
+- Adds option to (de)buff damage of arrows
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -99,6 +102,11 @@ Config file settings:
 - buff_health_pots: Boolean, Buffs the health potion back to pre-1.5 mechanics
 - horse_speed: Double, Sets the base movement speed of all mounted horses. This is MineCraft's adjustment ratio. The default 0.17 is just slower than a minecart.
 - fix_minecart_reenter_bug: Boolean, Fixes the minecart re-enter bug where players in a destroyed minecart could fall through the world
+- strength_multiplier: Integer, multiplier for added damage from strength potion levels.
+- hunger_slowdown: Integer, amount of saturation to give a player when they lose a point of hunger
+- prevent_tree_wraparound: Boolean, prevents structure growth from wrapping around from the top of the world to bedrock causing block overwrite.
+- disable_hopper_out_transfers: Boolean, disables transfers from hoppers to other hoppers or droppers
+- bow_buff: Double, (de)buffs bow damage. Set to 1 for default, less than one for debuff, more than one for buff, 0 for no effect and less than 0 for heal.
 
 Default configuration (biased for CivCraft):
 - debug: false
@@ -151,3 +159,8 @@ Default configuration (biased for CivCraft):
 - buff_health_pots: true
 - horse_speed: 0.17
 - fix_minecart_reenter_bug: true
+- strength_multiplier: 3
+- hunger_slowdown: 0.0
+- prevent_tree_wraparound: true
+- disable_hopper_out_transfers: false
+- bow_buff: 1.0

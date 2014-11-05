@@ -60,6 +60,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.entity.Arrow;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityCreatePortalEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -183,6 +184,27 @@ public class Humbug extends JavaPlugin implements Listener {
   public void onDyeWool(SheepDyeWoolEvent event) {
     if (!config_.get("allow_dye_sheep").getBool()) {
       event.setCancelled(true);
+    }
+  }
+
+  // ================================================
+  // Configurable bow buff
+
+  @BahHumbug(opt="bow_buff", type=OptType.Double, def="1.000000")
+  @EventHandler
+  public void onArrowHitEntity(EntityDamageByEntityEvent event) {
+    Double multiplier = config_.get("bow_buff").getDouble();
+    if(multiplier <= 1.000001 && multiplier >= 0.999999) {
+      return;
+    }
+
+    if (event.getEntity() instanceof LivingEntity) {
+      Entity damager = event.getDamager();
+      if (damager instanceof Arrow) {
+        Arrow arrow = (Arrow) event.getDamager();
+        LivingEntity shooter = arrow.getShooter();
+        event.setDamage(event.getDamage() * config_.get("bow_buff").getDouble());
+      }
     }
   }
 

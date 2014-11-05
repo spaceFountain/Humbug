@@ -6,7 +6,7 @@
   <groupId>com.untamedears</groupId>
   <artifactId>Humbug</artifactId>
   <packaging>jar</packaging>
-  <version>1.5.11-SNAPSHOT</version>
+  <version>1.5.13</version>
   <name>Humbug</name>
   <url>https://github.com/erocs/Humbug</url>
 
