@@ -1,7 +1,7 @@
 package com.untamedears.humbug;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,6 +33,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Enderman;
@@ -60,7 +61,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.entity.Arrow;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityCreatePortalEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -106,14 +106,10 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
-import com.untamedears.humbug.CombatTagManager;
-import com.untamedears.humbug.Versioned;
 import com.untamedears.humbug.annotations.BahHumbug;
 import com.untamedears.humbug.annotations.BahHumbugs;
 import com.untamedears.humbug.annotations.ConfigOption;
 import com.untamedears.humbug.annotations.OptType;
-import com.untamedears.humbug.Config;
-import com.untamedears.humbug.CustomNMSItemEnderPearl;
 
 public class Humbug extends JavaPlugin implements Listener {
   public static void severe(String message) {
@@ -1841,7 +1837,7 @@ public class Humbug extends JavaPlugin implements Listener {
   public void kickPlayerFromVehicle(Player player) {
     Entity vehicle = player.getVehicle();
     if (vehicle == null
-        || !(vehicle instanceof Minecart || vehicle instanceof Horse)) {
+        || !(vehicle instanceof Minecart || vehicle instanceof Horse || vehicle instanceof Arrow)) {
       return;
     }
     Location vehicleLoc = vehicle.getLocation();
