@@ -101,6 +101,8 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -186,6 +188,13 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Configurable bow buff
 
+  @EventHandler
+  public void onEntityShootBowEventAlreadyIntializedSoIMadeThisUniqueName(EntityShootBowEvent event) {
+    Integer power = event.getBow().getEnchantmentLevel(Enchantment.ARROW_DAMAGE);
+    MetadataValue metadata = new FixedMetadataValue(this, power);
+    event.getProjectile().setMetadata("power", metadata);
+  }
+
   @BahHumbug(opt="bow_buff", type=OptType.Double, def="1.000000")
   @EventHandler
   public void onArrowHitEntity(EntityDamageByEntityEvent event) {
@@ -198,15 +207,12 @@ public class Humbug extends JavaPlugin implements Listener {
       Entity damager = event.getDamager();
       if (damager instanceof Arrow) {
         Arrow arrow = (Arrow) event.getDamager();
-        LivingEntity shooter = arrow.getShooter();
         Double damage = event.getDamage() * config_.get("bow_buff").getDouble();
-        ItemStack bow = shooter.getEquipment().getItemInHand();
-        if(bow.getType().equals(Material.BOW)) {
-          // Assuming this will return 0 if item does not have ARROW_DAMAGE enchantment
-          Integer power = bow.getEnchantmentLevel(Enchantment.ARROW_DAMAGE);
-          // f(x) = 1.25^(x - 5)
-          damage *= Math.pow(1.25, power - 5);
+        Integer power = 0;
+        if(arrow.hasMetadata("power")) {
+          power = arrow.getMetadata("power").get(0).asInt();
         }
+        damage *= Math.pow(1.25, power - 5); // f(x) = 1.25^(x - 5)
         event.setDamage(damage);
       }
     }
