@@ -1,7 +1,7 @@
 package com.untamedears.humbug;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,6 +33,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Enderman;
@@ -60,7 +61,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.entity.Arrow;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityCreatePortalEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -106,14 +106,10 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
-import com.untamedears.humbug.CombatTagManager;
-import com.untamedears.humbug.Versioned;
 import com.untamedears.humbug.annotations.BahHumbug;
 import com.untamedears.humbug.annotations.BahHumbugs;
 import com.untamedears.humbug.annotations.ConfigOption;
 import com.untamedears.humbug.annotations.OptType;
-import com.untamedears.humbug.Config;
-import com.untamedears.humbug.CustomNMSItemEnderPearl;
 
 public class Humbug extends JavaPlugin implements Listener {
   public static void severe(String message) {
@@ -253,11 +249,11 @@ public class Humbug extends JavaPlugin implements Listener {
       clickedMaterial = clickedState.getType();
     }
     if (clickedState != null && (
-        clickedState instanceof InventoryHolder
-            || clickedMaterial.equals(Material.ANVIL)
-            || clickedMaterial.equals(Material.ENCHANTMENT_TABLE)
-            || clickedMaterial.equals(Material.ENDER_CHEST)
-            || clickedMaterial.equals(Material.WORKBENCH))) {
+          clickedState instanceof InventoryHolder
+          || clickedMaterial.equals(Material.ANVIL)
+          || clickedMaterial.equals(Material.ENCHANTMENT_TABLE)
+          || clickedMaterial.equals(Material.ENDER_CHEST)
+          || clickedMaterial.equals(Material.WORKBENCH))) {
       // Prevent Combat Tag/Pearl cooldown on inventory access
       return;
     }
@@ -307,8 +303,8 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   @BahHumbugs({
-      @BahHumbug(opt="ender_pearl_teleportation", def="true"),
-      @BahHumbug(opt="fix_teleport_glitch", def="true")
+    @BahHumbug(opt="ender_pearl_teleportation", def="true"),
+    @BahHumbug(opt="fix_teleport_glitch", def="true")
   })
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   public void onTeleport(PlayerTeleportEvent event) {
@@ -333,50 +329,50 @@ public class Humbug extends JavaPlugin implements Listener {
     boolean lowerBlockBypass = false;
     double height = 0.0;
     switch( toBlock.getType() ) {
-      case CHEST: // Probably never will get hit directly
-      case ENDER_CHEST: // Probably never will get hit directly
-        height = 0.875;
-        break;
-      case STEP:
-        lowerBlockBypass = true;
-        height = 0.5;
-        break;
-      case WATER_LILY:
-        height = 0.016;
-        break;
-      case ENCHANTMENT_TABLE:
-        lowerBlockBypass = true;
-        height = 0.75;
-        break;
-      case BED:
-      case BED_BLOCK:
-        // This one is tricky, since even with a height offset of 2.5, it still glitches.
-        //lowerBlockBypass = true;
-        //height = 0.563;
-        // Disabling teleporting on top of beds for now by leaving lowerBlockBypass false.
-        break;
-      case FLOWER_POT:
-      case FLOWER_POT_ITEM:
-        height = 0.375;
-        break;
-      case SKULL: // Probably never will get hit directly
-        height = 0.5;
-        break;
-      default:
-        break;
+    case CHEST: // Probably never will get hit directly
+    case ENDER_CHEST: // Probably never will get hit directly
+      height = 0.875;
+      break;
+    case STEP:
+      lowerBlockBypass = true;
+      height = 0.5;
+      break;
+    case WATER_LILY:
+      height = 0.016;
+      break;
+    case ENCHANTMENT_TABLE:
+      lowerBlockBypass = true;
+      height = 0.75;
+      break;
+    case BED:
+    case BED_BLOCK:
+      // This one is tricky, since even with a height offset of 2.5, it still glitches.
+      //lowerBlockBypass = true;
+      //height = 0.563;
+      // Disabling teleporting on top of beds for now by leaving lowerBlockBypass false.
+      break;
+    case FLOWER_POT:
+    case FLOWER_POT_ITEM:
+      height = 0.375;
+      break;
+    case SKULL: // Probably never will get hit directly
+      height = 0.5;
+      break;
+    default:
+      break;
     }
     // Check if the below block is difficult
     // This is added because if you face downward directly on a gate, it will
     // teleport your feet INTO the gate, thus bypassing the gate until you leave that block.
     switch( belowBlock.getType() ) {
-      case FENCE:
-      case FENCE_GATE:
-      case NETHER_FENCE:
-      case COBBLE_WALL:
-        height = 0.5;
-        break;
-      default:
-        break;
+    case FENCE:
+    case FENCE_GATE:
+    case NETHER_FENCE:
+    case COBBLE_WALL:
+      height = 0.5;
+      break;
+    default:
+      break;
     }
 
     boolean upperBlockBypass = false;
@@ -396,8 +392,8 @@ public class Humbug extends JavaPlugin implements Listener {
     to.setZ(Math.floor(to.getZ()) + 0.5000);
 
     if(aboveBlock.getType().isSolid() ||
-        (toBlock.getType().isSolid() && !lowerBlockBypass) ||
-        upperBlockBypass ) {
+       (toBlock.getType().isSolid() && !lowerBlockBypass) ||
+       upperBlockBypass ) {
       // One last check because I care about Top Nether.  (someone build me a shrine up there)
       boolean bypass = false;
       if ((world.getEnvironment() == Environment.NETHER) &&
@@ -421,7 +417,7 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     Entity npc = event.getRightClicked();
     if (npc == null) {
-      return;
+        return;
     }
     if (npc.getType() == EntityType.VILLAGER) {
       event.setCancelled(true);
@@ -433,8 +429,8 @@ public class Humbug extends JavaPlugin implements Listener {
 
   // EventHandler registered in onPlayerInteract
   @BahHumbugs({
-      @BahHumbug(opt="anvil"),
-      @BahHumbug(opt="ender_chest")
+    @BahHumbug(opt="anvil"),
+    @BahHumbug(opt="ender_chest")
   })
   public void onAnvilOrEnderChestUse(PlayerInteractEvent event) {
     if (config_.get("anvil").getBool() && config_.get("ender_chest").getBool()) {
@@ -443,11 +439,11 @@ public class Humbug extends JavaPlugin implements Listener {
     Action action = event.getAction();
     Material material = event.getClickedBlock().getType();
     boolean anvil = !config_.get("anvil").getBool() &&
-        action == Action.RIGHT_CLICK_BLOCK &&
-        material.equals(Material.ANVIL);
+                    action == Action.RIGHT_CLICK_BLOCK &&
+                    material.equals(Material.ANVIL);
     boolean ender_chest = !config_.get("ender_chest").getBool() &&
-        action == Action.RIGHT_CLICK_BLOCK &&
-        material.equals(Material.ENDER_CHEST);
+                          action == Action.RIGHT_CLICK_BLOCK &&
+                          material.equals(Material.ENDER_CHEST);
     if (anvil || ender_chest) {
       event.setCancelled(true);
     }
@@ -582,11 +578,11 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Death Messages
   @BahHumbugs({
-      @BahHumbug(opt="deathannounce", def="true"),
-      @BahHumbug(opt="deathlog"),
-      @BahHumbug(opt="deathpersonal"),
-      @BahHumbug(opt="deathred"),
-      @BahHumbug(opt="ender_backpacks")
+    @BahHumbug(opt="deathannounce", def="true"),
+    @BahHumbug(opt="deathlog"),
+    @BahHumbug(opt="deathpersonal"),
+    @BahHumbug(opt="deathred"),
+    @BahHumbug(opt="ender_backpacks")
   })
   @EventHandler(priority=EventPriority.HIGHEST)
   public void onDeath(PlayerDeathEvent e) {
@@ -636,7 +632,7 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     Entity npc = event.getEntity();
     if (npc == null) {
-      return;
+        return;
     }
     EntityType npc_type = npc.getType();
     if (npc_type.equals(EntityType.WITHER)) {
@@ -652,11 +648,11 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     Entity npc = event.getEntity();
     if (npc == null) {
-      return;
+        return;
     }
     EntityType npc_type = npc.getType();
     if ((npc_type.equals(EntityType.WITHER) ||
-        npc_type.equals(EntityType.WITHER_SKULL))) {
+         npc_type.equals(EntityType.WITHER_SKULL))) {
       event.blockList().clear();
     }
   }
@@ -700,11 +696,11 @@ public class Humbug extends JavaPlugin implements Listener {
   // Spawn more Wither Skeletons and Ghasts
 
   @BahHumbugs ({
-      @BahHumbug(opt="extra_ghast_spawn_rate", type=OptType.Int),
-      @BahHumbug(opt="extra_wither_skele_spawn_rate", type=OptType.Int),
-      @BahHumbug(opt="portal_extra_ghast_spawn_rate", type=OptType.Int),
-      @BahHumbug(opt="portal_extra_wither_skele_spawn_rate", type=OptType.Int),
-      @BahHumbug(opt="portal_pig_spawn_multiplier", type=OptType.Int)
+    @BahHumbug(opt="extra_ghast_spawn_rate", type=OptType.Int),
+    @BahHumbug(opt="extra_wither_skele_spawn_rate", type=OptType.Int),
+    @BahHumbug(opt="portal_extra_ghast_spawn_rate", type=OptType.Int),
+    @BahHumbug(opt="portal_extra_wither_skele_spawn_rate", type=OptType.Int),
+    @BahHumbug(opt="portal_pig_spawn_multiplier", type=OptType.Int)
   })
   @EventHandler(ignoreCancelled=true)
   public void spawnMoreHellMonsters(CreatureSpawnEvent e) {
@@ -834,9 +830,9 @@ public class Humbug extends JavaPlugin implements Listener {
       multiplier = config_.getLootMultiplier("generic");
     }
     for (ItemStack item : event.getDrops()) {
-      int amount = item.getAmount() * multiplier;
+      int amount = item.getAmount() * multiplier;   
       item.setAmount(amount);
-    }
+    }  
   }
 
   @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
@@ -872,8 +868,8 @@ public class Humbug extends JavaPlugin implements Listener {
       stack_size = inventory_max_stack_size;
     }
     info(String.format(
-        "Replaced %d Enchanted with %d Normal Golden Apples for %s",
-        item.getAmount(), stack_size, player_name));
+          "Replaced %d Enchanted with %d Normal Golden Apples for %s",
+          item.getAmount(), stack_size, player_name));
     item.setDurability((short)0);
     item.setAmount(stack_size);
   }
@@ -925,7 +921,7 @@ public class Humbug extends JavaPlugin implements Listener {
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void onPrepareItemEnchantEvent(PrepareItemEnchantEvent event) {
     if (config_.get("ench_book_craftable").getBool()) {
-      return;
+        return;
     }
     ItemStack item = event.getItem();
     if (isNormalBook(item)) {
@@ -936,7 +932,7 @@ public class Humbug extends JavaPlugin implements Listener {
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void onEnchantItemEvent(EnchantItemEvent event) {
     if (config_.get("ench_book_craftable").getBool()) {
-      return;
+        return;
     }
     ItemStack item = event.getItem();
     if (isNormalBook(item)) {
@@ -944,7 +940,7 @@ public class Humbug extends JavaPlugin implements Listener {
       Player player = event.getEnchanter();
       warning(
           "Prevented book enchant. This should not trigger. Watch player " +
-              player.getName());
+          player.getName());
     }
   }
 
@@ -958,7 +954,7 @@ public class Humbug extends JavaPlugin implements Listener {
       BlockFace.WEST,
       BlockFace.UP,
       BlockFace.DOWN
-  };
+    };
 
 
   private BlockFace WaterAdjacentLava(Block lava_block) {
@@ -1031,8 +1027,8 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   @BahHumbugs ({
-      @BahHumbug(opt="cobble_from_lava"),
-      @BahHumbug(opt="cobble_from_lava_scan_radius", type=OptType.Int, def="0")
+    @BahHumbug(opt="cobble_from_lava"),
+    @BahHumbug(opt="cobble_from_lava_scan_radius", type=OptType.Int, def="0")
   })
   @EventHandler(priority = EventPriority.LOWEST)
   public void onBlockPhysicsEvent(BlockPhysicsEvent event) {
@@ -1050,7 +1046,7 @@ public class Humbug extends JavaPlugin implements Listener {
   @EventHandler(priority = EventPriority.LOWEST) // ignoreCancelled=false
   public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
     if (!config_.get("scale_protection_enchant").getBool()) {
-      return;
+        return;
     }
     double damage = event.getDamage();
     if (damage <= 0.0000001D) {
@@ -1058,8 +1054,8 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     DamageCause cause = event.getCause();
     if (!cause.equals(DamageCause.ENTITY_ATTACK) &&
-        !cause.equals(DamageCause.PROJECTILE)) {
-      return;
+            !cause.equals(DamageCause.PROJECTILE)) {
+        return;
     }
     Entity entity = event.getEntity();
     if (!(entity instanceof Player)) {
@@ -1250,14 +1246,14 @@ public class Humbug extends JavaPlugin implements Listener {
     int count = 0;
     Inventory inv = player.getInventory();
     while (checkForInventorySpace(inv, 4)) {
-      inv.addItem(createHolidayBook());
-      inv.addItem(createFruitcake());
-      inv.addItem(createTurkey());
-      inv.addItem(createCoal());
-      ++count;
+        inv.addItem(createHolidayBook());
+        inv.addItem(createFruitcake());
+        inv.addItem(createTurkey());
+        inv.addItem(createCoal());
+        ++count;
     }
     info(String.format("%s generated %d packs of holiday cheer.",
-        player.getName(), count));
+          player.getName(), count));
   }
 
   public ItemStack createHolidayBook() {
@@ -1285,18 +1281,18 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   private String[] turkey_names_ = new String[] {
-      "Turkey",
-      "Turkey",
-      "Turkey",
-      "Turducken",
-      "Tofurkey",
-      "Cearc Frangach",
-      "Dinde",
-      "Kalkoen",
-      "Indeyka",
-      "Pollo d'India",
-      "Pelehu",
-      "Chilmyeonjo"
+    "Turkey",
+    "Turkey",
+    "Turkey",
+    "Turducken",
+    "Tofurkey",
+    "Cearc Frangach",
+    "Dinde",
+    "Kalkoen",
+    "Indeyka",
+    "Pollo d'India",
+    "Pelehu",
+    "Chilmyeonjo"
   };
 
   public ItemStack createTurkey() {
@@ -1345,8 +1341,8 @@ public class Humbug extends JavaPlugin implements Listener {
   // Water in the nether? Nope.
 
   @BahHumbugs ({
-      @BahHumbug(opt="allow_water_in_nether"),
-      @BahHumbug(opt="indestructible_end_portals", def="true")
+    @BahHumbug(opt="allow_water_in_nether"),
+    @BahHumbug(opt="indestructible_end_portals", def="true")
   })
   @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void onPlayerBucketEmptyEvent(PlayerBucketEmptyEvent e) {
@@ -1363,7 +1359,7 @@ public class Humbug extends JavaPlugin implements Listener {
       BlockFace face = e.getBlockFace();
       Block block = baseBlock.getRelative(face);
       if (block.getType() == Material.ENDER_PORTAL) {
-        e.setCancelled(true);
+          e.setCancelled(true);
       }
     }
   }
@@ -1380,7 +1376,7 @@ public class Humbug extends JavaPlugin implements Listener {
     }
     if (config_.get("indestructible_end_portals").getBool()) {
       if (e.getToBlock().getType() == Material.ENDER_PORTAL) {
-        e.setCancelled(true);
+          e.setCancelled(true);
       }
     }
   }
@@ -1389,8 +1385,8 @@ public class Humbug extends JavaPlugin implements Listener {
   // Changes Strength Potions, strength_multiplier 3 is roughly Pre-1.6 Level
 
   @BahHumbugs ({
-      @BahHumbug(opt="nerf_strength", def="true"),
-      @BahHumbug(opt="strength_multiplier", type=OptType.Int, def="3")
+    @BahHumbug(opt="nerf_strength", def="true"),
+    @BahHumbug(opt="strength_multiplier", type=OptType.Int, def="3")
   })
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   public void onPlayerDamage(EntityDamageByEntityEvent event) {
@@ -1433,8 +1429,8 @@ public class Humbug extends JavaPlugin implements Listener {
       if (entity instanceof Player) {
         if(((Damageable)entity).getHealth() > 0d) {
           final double newHealth = Math.min(
-              ((Damageable)entity).getHealth() + 4.0D,
-              ((Damageable)entity).getMaxHealth());
+            ((Damageable)entity).getHealth() + 4.0D,
+            ((Damageable)entity).getMaxHealth());
           entity.setHealth(newHealth);
         }
       }
@@ -1445,8 +1441,8 @@ public class Humbug extends JavaPlugin implements Listener {
   // Bow shots cause slow debuff
 
   @BahHumbugs ({
-      @BahHumbug(opt="projectile_slow_chance", type=OptType.Int, def="30"),
-      @BahHumbug(opt="projectile_slow_ticks", type=OptType.Int, def="100")
+    @BahHumbug(opt="projectile_slow_chance", type=OptType.Int, def="30"),
+    @BahHumbug(opt="projectile_slow_ticks", type=OptType.Int, def="100")
   })
   @EventHandler
   public void onEDBE(EntityDamageByEntityEvent event) {
@@ -1497,7 +1493,7 @@ public class Humbug extends JavaPlugin implements Listener {
   @EventHandler
   public void onEntityShootBow(EntityShootBowEvent event) {
     if (!(event.getEntity() instanceof Player)) {
-      return;
+         return;
     }
     int ench_level = 0;
     ItemStack bow = event.getBow();
@@ -1523,8 +1519,8 @@ public class Humbug extends JavaPlugin implements Listener {
 
   // Changes the yield from an XP bottle
   @BahHumbugs ({
-      @BahHumbug(opt="disable_experience", def="true"),
-      @BahHumbug(opt="xp_per_bottle", type=OptType.Int, def="10")
+    @BahHumbug(opt="disable_experience", def="true"),
+    @BahHumbug(opt="xp_per_bottle", type=OptType.Int, def="10")
   })
   @EventHandler(priority=EventPriority.HIGHEST)
   public void onExpBottleEvent(ExpBottleEvent event) {
@@ -1607,8 +1603,8 @@ public class Humbug extends JavaPlugin implements Listener {
   // Prevent inventory access while in a vehicle, unless it's the Player's
 
   @BahHumbugs ({
-      @BahHumbug(opt="prevent_opening_container_carts", def="true"),
-      @BahHumbug(opt="prevent_vehicle_inventory_open", def="true")
+    @BahHumbug(opt="prevent_opening_container_carts", def="true"),
+    @BahHumbug(opt="prevent_vehicle_inventory_open", def="true")
   })
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
   public void onPreventVehicleInvOpen(InventoryOpenEvent event) {
@@ -1739,7 +1735,7 @@ public class Humbug extends JavaPlugin implements Listener {
     final Location to = event.getTo();
     final Material boatOn = to.getBlock().getRelative(BlockFace.DOWN).getType();
     if (boatOn.equals(Material.STATIONARY_WATER) || boatOn.equals(Material.WATER)) {
-      return;
+        return;
     }
     Humbug.info(String.format(
         "Player '%s' removed from land-boat at %s",
@@ -1849,7 +1845,7 @@ public class Humbug extends JavaPlugin implements Listener {
   public void kickPlayerFromVehicle(Player player) {
     Entity vehicle = player.getVehicle();
     if (vehicle == null
-        || !(vehicle instanceof Minecart || vehicle instanceof Horse)) {
+        || !(vehicle instanceof Minecart || vehicle instanceof Horse || vehicle instanceof Arrow)) {
       return;
     }
     Location vehicleLoc = vehicle.getLocation();
@@ -1935,27 +1931,27 @@ public class Humbug extends JavaPlugin implements Listener {
       Field fieldClassToString = EntityTypes.class.getDeclaredField("d");
       fieldStringToClass.setAccessible(true);
       fieldClassToString.setAccessible(true);
-
+      
       Field fieldClassToId = EntityTypes.class.getDeclaredField("f");
       Field fieldStringToId = EntityTypes.class.getDeclaredField("g");
       fieldClassToId.setAccessible(true);
       fieldStringToId.setAccessible(true);
-
+      
       Map mapStringToClass = (Map)fieldStringToClass.get(null);
       Map mapClassToString = (Map)fieldClassToString.get(null);
-
+      
       Map mapClassToId = (Map)fieldClassToId.get(null);
       Map mapStringToId = (Map)fieldStringToId.get(null);
-
+      
       mapStringToClass.put("ThrownEnderpearl",CustomNMSEntityEnderPearl.class);
       mapStringToId.put("ThrownEnderpearl", Integer.valueOf(14));
-
+      
       mapClassToString.put(CustomNMSEntityEnderPearl.class, "ThrownEnderpearl");
       mapClassToId.put(CustomNMSEntityEnderPearl.class, Integer.valueOf(14));
-
+      
       fieldStringToClass.set(null, mapStringToClass);
       fieldClassToString.set(null, mapClassToString);
-
+      
       fieldClassToId.set(null, mapClassToId);
       fieldStringToId.set(null, mapStringToId);
     } catch (Exception e) {
@@ -2078,7 +2074,7 @@ public class Humbug extends JavaPlugin implements Listener {
       }
     }
   }
-
+  
   public boolean isWrittenBook(ItemStack item) {
     if (item == null) {
       return false;
@@ -2128,7 +2124,7 @@ public class Humbug extends JavaPlugin implements Listener {
     global_instance_ = this;
     info("Enabled");
   }
-
+  
   public void onDisable() {
     if (config_.get("fix_vehicle_logout_bug").getBool()) {
       for (World world: getServer().getWorlds()) {
@@ -2249,7 +2245,7 @@ public class Humbug extends JavaPlugin implements Listener {
       }
       if (set) {
         config_.setLootMultiplier(
-            entity_type, toInt(value, config_.getLootMultiplier(entity_type)));
+                entity_type, toInt(value, config_.getLootMultiplier(entity_type)));
       }
       msg = String.format(
           "loot_multiplier(%s) = %d", entity_type, config_.getLootMultiplier(entity_type));
