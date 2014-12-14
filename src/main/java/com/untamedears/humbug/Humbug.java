@@ -1099,6 +1099,20 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
+  // Fix dupe bug with chests and other containers
+  
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
+  public void blockExplodeEvent(EntityExplodeEvent event){
+	  for (Block block: event.blockList()){
+		  if (block.getState() instanceof InventoryHolder){
+			  InventoryHolder holder = (InventoryHolder) block.getState();
+			  for (HumanEntity ent: holder.getInventory().getViewers())
+				  ent.closeInventory();
+		  }
+	  }
+  }
+  
+  // ==================================================
   // Prevent entity dup bug
   // From https://github.com/intangir/EventBlocker
 
