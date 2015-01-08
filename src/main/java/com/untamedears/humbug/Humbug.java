@@ -916,6 +916,7 @@ public class Humbug extends JavaPlugin implements Listener {
   // ================================================
   // Fix entities going through portals
   
+  // This needs to be removed when updated to citadel 3.0
   @BahHumbug(opt="disable_entities_portal", type = OptType.Bool, def = "true")
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void entityPortalEvent(EntityPortalEvent event){
