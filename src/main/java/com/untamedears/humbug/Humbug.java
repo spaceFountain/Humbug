@@ -1112,13 +1112,16 @@ public class Humbug extends JavaPlugin implements Listener {
   
   @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
   public void blockExplodeEvent(EntityExplodeEvent event){
+	  List<HumanEntity> humans = new ArrayList<HumanEntity>();
 	  for (Block block: event.blockList()){
 		  if (block.getState() instanceof InventoryHolder){
 			  InventoryHolder holder = (InventoryHolder) block.getState();
 			  for (HumanEntity ent: holder.getInventory().getViewers())
-				  ent.closeInventory();
+				  humans.add(ent);
 		  }
 	  }
+	  for (HumanEntity human: humans)
+		  human.closeInventory();
   }
   
   // ==================================================
