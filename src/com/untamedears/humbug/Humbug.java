@@ -67,6 +67,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ExpBottleEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
@@ -913,6 +914,14 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   // ================================================
+  // Fix entities going through portals
+  
+  @BahHumbug(opt="disable_entities_portal", type = OptType.Bool, def = "true")
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
+  public void entityPortalEvent(EntityPortalEvent event){
+	  event.setCancelled(config_.get("disable_entities_portal").getBool());
+  }
+  //=================================================
   // Enchanted Book
 
   public boolean isNormalBook(ItemStack item) {
