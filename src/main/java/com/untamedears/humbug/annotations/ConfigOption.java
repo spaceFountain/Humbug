@@ -1,8 +1,6 @@
 package com.untamedears.humbug.annotations;
 
 import com.untamedears.humbug.Config;
-import com.untamedears.humbug.annotations.BahHumbug;
-import com.untamedears.humbug.annotations.OptType;
 
 public class ConfigOption {
   private final String name_;

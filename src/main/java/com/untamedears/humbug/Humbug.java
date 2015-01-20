@@ -14,8 +14,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import net.minecraft.server.v1_7_R4.EntityTypes;
-import net.minecraft.server.v1_7_R4.Item;
+import net.minecraft.server.v1_8_R1.EntityTypes;
+import net.minecraft.server.v1_8_R1.Item;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -2018,12 +2018,7 @@ public class Humbug extends JavaPlugin implements Listener {
       
       mapClassToString.put(CustomNMSEntityEnderPearl.class, "ThrownEnderpearl");
       mapClassToId.put(CustomNMSEntityEnderPearl.class, Integer.valueOf(14));
-      
-      fieldStringToClass.set(null, mapStringToClass);
-      fieldClassToString.set(null, mapClassToString);
-      
-      fieldClassToId.set(null, mapClassToId);
-      fieldStringToId.set(null, mapStringToId);
+
     } catch (Exception e) {
       Humbug.severe("Exception while overriding MC's ender pearl class");
       e.printStackTrace();
