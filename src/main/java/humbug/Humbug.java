@@ -1415,6 +1415,43 @@ public class Humbug extends JavaPlugin implements Listener {
   }
 
   //=================================================
+  // Stops perculators
+  @BahHumbug(opt="max_water_lava_height", def="100", type=OptType.Int)
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  public void stopLiquidMoving(BlockFromToEvent event){
+	  Block source = event.getBlock();
+	  Block to = event.getToBlock();
+	  if (source.getLocation().getBlockY() < config_.get("max_water_lava_height").getInt())
+		  return;
+	  boolean cancel = false;
+	  if (source.getType().equals(Material.WATER) || source.getType().equals(Material.STATIONARY_WATER))
+		  cancel = !isWaterSourceNear(source, 2);
+	  else
+		  cancel = !isLavaSourceNear(source, 2);
+	  event.setCancelled(cancel);
+  }
+  
+  public boolean isWaterSourceNear(Block block, int ttl) {
+	    int data = (int)block.getData();
+	    if (data == 0) {
+	      Material material = block.getType();
+	      if (material.equals(Material.WATER) ||
+	          material.equals(Material.STATIONARY_WATER)) {
+	        return true;
+	      }
+	    }
+	    if (ttl <= 0) {
+	      return false;
+	    }
+	    for (BlockFace face : faces_) {
+	      Block child = block.getRelative(face);
+	      if (isWaterSourceNear(child, ttl - 1)) {
+	        return true;
+	      }
+	    }
+	    return false;
+	  }
+  // ================================================
   // Changes Strength Potions, strength_multiplier 3 is roughly Pre-1.6 Level
 
   @BahHumbugs ({
